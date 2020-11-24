@@ -17,10 +17,12 @@ export const api = axios.create({
 export const getLocation = async () => {
     let { status } = await Location.requestPermissionsAsync()
     if (status !== 'granted') {
-        return new Promise.reject('Permission to access location was denied')
+      return new Promise.reject('Permission to access location was denied')
     }
 
-    return await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-    }).then(result => ({ ...result.coords, ...locationDelta }))
+    let { coords } = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.High,
+    })
+
+    return ({ ...coords, ...locationDelta })
 }
