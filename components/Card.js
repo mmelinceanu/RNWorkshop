@@ -1,18 +1,17 @@
-import React, { memo, useRef, useState, useCallback, useMemo } from 'react';
-import { StyleSheet, View, Animated, PanResponder, Dimensions } from 'react-native';
+import React, { memo, useRef, useCallback, useMemo } from 'react'
+import { Animated, PanResponder, Dimensions } from 'react-native';
 import Shop from './Shop'
 
 const SCREEN_WIDTH = Dimensions.get('window').width 
 const SWIPE_THRESHOLD = 125;
 const DURATION = 500;
 
-const Deck = ({ data, onSwipeRight, onSwipeLeft }) => {
-    const [currentIndex, setCurrentIndex] = useState(0);
+const Card = ({ animated = false, data, swipeCallback }) => {
     const position = useRef(new Animated.ValueXY()).current
 
-    const swipeCallback = useCallback(() => {
-        setCurrentIndex(prev => prev + 1);
+    const swipeReset = useCallback(() => {
         position.setValue({ x: 0, y: 0 });
+        swipeCallback();
     }, [position])
 
     const forceSwipe = useCallback((direction, onSwipeComplete) => {
@@ -39,10 +38,10 @@ const Deck = ({ data, onSwipeRight, onSwipeLeft }) => {
             },
             onPanResponderRelease: (event, gesture) => {
                 if (gesture.dx > SWIPE_THRESHOLD) {
-                    forceSwipe('right', swipeCallback)
+                    forceSwipe('right', swipeReset)
                     console.log('right')
                 } else if (gesture.dx < -SWIPE_THRESHOLD) {
-                    forceSwipe('left', swipeCallback)
+                    forceSwipe('left', swipeReset)
                     console.log('left')
                 } else {
                     Animated.spring(position, {
@@ -66,25 +65,10 @@ const Deck = ({ data, onSwipeRight, onSwipeLeft }) => {
     }, [position])
 
     return (
-        <View style={styles.container}>    
-            {data.map((item, index) =>
-                index < currentIndex ? null
-                :
-                index === currentIndex &&
-                <Animated.View style={cardStyle} {...panResponder.panHandlers}>
-                    <Shop {...item} />
-                </Animated.View>
-                || <Shop {...item} />
-            )}
-        </View>
+        <Animated.View style={animated && cardStyle} {...(animated && panResponder.panHandlers || {})}>
+            <Shop {...data} />
+        </Animated.View>
     )
 }
 
-export default memo(Deck);
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-});
+export default memo(Card)
