@@ -1,31 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { SafeAreaView, StyleSheet } from 'react-native';
-import { api, fakeLocation } from './services'
-import Deck from './Deck'
+import { NavigationContainer } from '@react-navigation/native';
 
-const fetchShops = async () => {
-  const result = await api.get('/businesses/search', {
-    params: {
-      categories: 'coffee, coffeeroasteries, coffeeshop',
-      ...fakeLocation
-    }
-  })
+import Deck from './screens/Deck'
+import Map from '././screens/Map'
 
-  return result.data.businesses
-}
+const Tab = createBottomTabNavigator()
 
 export default function App() {
-  const [data, setData] = useState([]);
-
-  useEffect(() => {
-    fetchShops().then(shops => setData(shops))
-  }, []);
-
-  console.log(data)
-
   return (
     <SafeAreaView style={styles.container}>
-      <Deck data={data} onSwipeRight={()=> {}} onSwipeLeft={()=> {}} />
+      <NavigationContainer>
+        <Tab.Navigator initialRouteName="Deck">
+          <Tab.Screen name="Deck" component={Deck} options={{ title: 'Deck' }} />
+          <Tab.Screen name="Map" component={Map} options={{ title: 'Map' }} />
+        </Tab.Navigator>
+      </NavigationContainer>
     </SafeAreaView>
   );
 }
@@ -33,10 +24,8 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    margin: 16,
-    marginBottom: 32,
+    padding: 16,
     backgroundColor: '#fff',
-    alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },

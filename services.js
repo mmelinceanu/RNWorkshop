@@ -1,24 +1,10 @@
-import faker from 'faker';
 import Constants from 'expo-constants';
 import axios from 'axios';
+import * as Location from 'expo-location';
 
-export const fakeCoffeeShops = (() => {
-    let data = [];
-
-    for(let i=0; i<=12; i++) {
-        data.push({
-            id: faker.random.uuid(),
-            image_url: faker.image.imageUrl(),
-            name: faker.company.companyName()
-        });
-    }
-
-    return data;
-})();
-
-export const fakeLocation = {
-    latitude: '37.786882',
-    longitude: '-122.399972'
+const locationDelta = {
+  latitudeDelta: 0.0922,
+  longitudeDelta: 0.0421,
 }
 
 export const api = axios.create({
@@ -27,3 +13,14 @@ export const api = axios.create({
       Authorization: `Bearer ${Constants.manifest.extra.yelpApiKey}`
     }
 })
+
+export const getLocation = async () => {
+    let { status } = await Location.requestPermissionsAsync()
+    if (status !== 'granted') {
+        return new Promise.reject('Permission to access location was denied')
+    }
+
+    return await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+    }).then(result => ({ ...result.coords, ...locationDelta }))
+}
